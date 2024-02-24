@@ -1,9 +1,18 @@
+import concatAudioBuffers from "concat-audio-buffers";
+
 /**
  * @var {AudioContext} audioCtx
  */
 let audioCtx;
+
+export const PlayAudioStreamCtx = (stream) => {
+  audioCtx = new AudioContext()
+  const source = audioCtx.createMediaStreamSource(stream)
+  source.connect(audioCtx.destination)
+  source.start()
+}
+
 export const playAudioContext = async (stream) => {
-  let decodedBuffer;
   let concatedBuffer = null;
   if (!audioCtx) {
     audioCtx = new AudioContext();
@@ -14,18 +23,30 @@ export const playAudioContext = async (stream) => {
       if (done) {
         break;
       }
-      decodedBuffer = await audioCtx.decodeAudioData(value.buffer);
-//      if(!concatedBuffer){
-//        concatedBuffer = decodedBuffer
-//      } else {
-//        concatedBuffer = concatenateBuffer(concatedBuffer, decodedBuffer)
-//      }
-      if (!source || source.playbackState === source.FINISHED) {
-        source = audioCtx.createBufferSource();
-        source.buffer = concatedBuffer;
+      let decodedBuffer
+      try {
+        decodedBuffer = await audioCtx.decodeAudioData(value.buffer);
+      } catch (err) {
+        console.log(err);
       }
-      source.connect(audioCtx.destination);
-      source.start();
+      if (!concatedBuffer) {
+        concatedBuffer = decodedBuffer;
+      } else {
+        concatAudioBuffers([concatedBuffer, decodedBuffer], 1, playAudio);
+      }
+      const playAudio = (error, combinedBuffer) => {
+        if (error) {
+          console.log(error);
+          return;
+        }
+        console.log(combinedBuffer);
+        if (!source || source.playbackState === source.FINISHED) {
+          source = audioCtx.createBufferSource();
+          source.buffer = combinedBuffer;
+        }
+        source.connect(audioCtx.destination);
+        source.start();
+      };
     }
   }
-}
+};

@@ -1,5 +1,6 @@
 import { playAudioStream } from "./audio/play-stream";
 import { initializeTts } from "./audio/tts";
+import { Config } from "./config";
 
 initializeTts();
 
@@ -33,8 +34,11 @@ const onSuccess = (stream) => {
     formData.append("audio", blob);
     formData.append("emotion_offset", JSON.stringify(emotion_offset));
     formData.append("session_id", "c250eb3d-c019-4968-a95a-e0f433ec5274");
-
-    const response = await fetch("http://localhost:5000/api/tts-pipeline/", {
+    formData.append(
+      "tts_config",
+      JSON.stringify({ output_format: "mp3_44100_64" })
+    );
+    const response = await fetch(`${Config.apiUrl}/tts-pipeline/`, {
       method: "POST",
       body: formData,
       headers: {

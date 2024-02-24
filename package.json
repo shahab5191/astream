@@ -8,10 +8,8 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "concat-audio-buffers": "^1.0.0"
-  },
   "devDependencies": {
+    "concat-audio-buffers": "^1.0.0",
     "html-webpack-plugin": "^5.6.0"
   }
 }
